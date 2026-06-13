@@ -1,0 +1,26 @@
+# ── Runtime ───────────────────────────────────────────────────────────────────
+flask
+httpx                  # replaces google-generativeai for Groq + Ollama calls
+python-dotenv
+langdetect
+apscheduler
+gunicorn
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest
+pytest-cov
+
+# ── Linting & Formatting ──────────────────────────────────────────────────────
+ruff
+flake8
+pylint
+vulture
+pyupgrade
+
+# ── Type Checking ─────────────────────────────────────────────────────────────
+mypy
+
+# ── Security ──────────────────────────────────────────────────────────────────
+bandit
+pip-audit
+detect-secrets

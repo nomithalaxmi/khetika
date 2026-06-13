@@ -1,0 +1,50 @@
+[project]
+name = "khetika"
+version = "1.1.0"
+description = "Multilingual AI-powered smart farming assistant for Indian farmers"
+authors = [{ name = "Naga Gireesh Reddy" }]
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "W", "F", "I", "UP", "B"]
+ignore = ["E501"]
+exclude = ["venv", ".venv", "__pycache__"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict_optional = true
+warn_unused_imports = true
+warn_return_any = false
+
+[tool.pylint.messages_control]
+disable = ["C0114", "C0115", "C0116", "R0903"]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["venv/*", ".venv/*", "tests/*", "*/site-packages/*"]
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true
+
+[tool.bandit]
+exclude_dirs = ["venv", ".venv", "tests"]
+skips = ["B101"]  # allow assert in tests
+
+[tool.vulture]
+min_confidence = 80
+paths = ["app.py", "database.py", "crop_calendar.py"]

@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khetika — Smart Farming Assistant</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#2e7d32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Khetika">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Noto+Sans+Telugu&family=Noto+Sans+Devanagari&family=Noto+Sans+Tamil&family=Noto+Sans+Kannada&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #1b5e20;
+      --green-mid: #2e7d32;
+      --green-light: #43a047;
+      --green-bg: #e8f5e9;
+      --green-border: #c8e6c9;
+      --accent: #f9a825;
+      --accent-light: #fff8e1;
+      --surface: #ffffff;
+      --bg: #f1f8f1;
+      --text: #1a2e1a;
+      --muted: #6a8a6a;
+      --radius: 18px;
+      --shadow: 0 4px 24px rgba(27,94,32,0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Baloo 2', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 2px solid var(--green-border);
+      padding: 0.5rem 1.2rem;
+      box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .navbar-brand {
+      font-weight: 800; font-size: 1.4rem; color: var(--green-mid) !important;
+      letter-spacing: 1px; display: flex; align-items: center; gap: 8px;
+    }
+    .navbar-brand .leaf { font-size: 1.6rem; }
+    .nav-tagline {
+      font-size: 12px; color: var(--muted); font-weight: 400;
+      display: none;
+    }
+    @media (min-width: 540px) { .nav-tagline { display: block; } }
+
+    /* PWA install banner */
+    #pwa-banner {
+      display: none;
+      background: linear-gradient(90deg, #1b5e20, #2e7d32);
+      color: white; padding: 8px 16px;
+      font-size: 13px; align-items: center; justify-content: space-between;
+      gap: 10px;
+    }
+    #pwa-banner button {
+      background: white; color: var(--green); border: none;
+      border-radius: 8px; padding: 4px 14px; font-weight: 700;
+      font-family: inherit; cursor: pointer; font-size: 12px;
+    }
+    #pwa-banner .close-pwa { background: transparent; color: rgba(255,255,255,0.7); font-size: 18px; padding: 0 6px; }
+
+    .lang-selector {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .lang-selector select {
+      border: 1.5px solid var(--green-border);
+      border-radius: 10px; padding: 4px 10px;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px; color: var(--green-mid);
+      background: var(--green-bg);
+      cursor: pointer; outline: none;
+      transition: border-color 0.2s;
+    }
+    .lang-selector select:focus { border-color: var(--green-mid); }
+    .lang-flag { font-size: 18px; }
+
+    /* ── Layout ── */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    @media (min-width: 768px) {
+      .main-layout {
+        grid-template-columns: 260px 1fr;
+        padding: 1.2rem;
+      }
+    }
+
+    /* ── Sidebar ── */
+    .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+    .card-panel {
+      background: var(--surface);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+    }
+    .card-panel h6 {
+      color: var(--green-mid); font-weight: 700;
+      font-size: 13px; margin-bottom: 0.6rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Weather card */
+    .weather-card {
+      background: linear-gradient(135deg, #e3f2fd, #e8f5e9);
+      border: 1.5px solid #b3d9f7;
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .weather-card h6 { color: #1565c0; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .weather-main { display: flex; align-items: center; gap: 10px; }
+    .weather-temp { font-size: 2rem; font-weight: 800; color: var(--green-mid); line-height: 1; }
+    .weather-info { font-size: 12px; color: #555; }
+    .weather-info .desc { font-weight: 600; color: #333; }
+    .weather-advice {
+      font-size: 11.5px; color: #1a3a1a; background: rgba(255,255,255,0.7);
+      border-radius: 8px; padding: 6px 10px; margin-top: 8px; line-height: 1.5;
+    }
+    .weather-badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; font-weight: 600; margin-top: 4px;
+    }
+    .weather-loading { font-size: 12px; color: var(--muted); text-align: center; padding: 10px 0; }
+
+    /* Weekly task card */
+    .task-card {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f9fbe7 100%);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      display: none;
+    }
+    .task-card .week-pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      background: var(--green-mid); color: white;
+      border-radius: 20px; padding: 2px 11px; margin-bottom: 6px;
+    }
+    .task-card .crop-name {
+      font-size: 13px; color: var(--green); font-weight: 600;
+    }
+    .task-card .task-text {
+      font-size: 13px; color: #2d4a2d; margin: 4px 0 0; line-height: 1.55;
+    }
+
+    /* Hints */
+    .hints-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .hint-chip {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      background: var(--green-bg); color: var(--green-mid);
+      border: 1.5px solid var(--green-border);
+      border-radius: 20px; padding: 5px 13px;
+      cursor: pointer; transition: all 0.18s; font-family: inherit;
+    }
+    .hint-chip:hover {
+      background: var(--green-mid); color: white;
+      border-color: var(--green-mid); transform: translateY(-1px);
+    }
+
+    /* ── Mandi Panel ── */
+    .mandi-panel { }
+    .mandi-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px;
+    }
+    .mandi-row:last-child { border: none; }
+    .mandi-market { color: #444; font-weight: 600; }
+    .mandi-price { color: var(--green-mid); font-weight: 800; font-size: 13px; }
+    .mandi-price small { color: var(--muted); font-weight: 400; font-size: 10px; }
+    .mandi-search { display: flex; gap: 6px; margin-bottom: 8px; }
+    .mandi-search input {
+      flex: 1; border: 1.5px solid var(--green-border); border-radius: 8px;
+      padding: 5px 10px; font-size: 12px; font-family: inherit; outline: none;
+    }
+    .mandi-search input:focus { border-color: var(--green-mid); }
+    .mandi-search button {
+      background: var(--green-mid); color: white; border: none;
+      border-radius: 8px; padding: 5px 12px; font-size: 12px;
+      font-family: inherit; font-weight: 600; cursor: pointer;
+    }
+    .mandi-source-badge {
+      font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 600;
+    }
+    .mandi-source-live { background: #e8f5e9; color: var(--green-mid); }
+    .mandi-source-sample { background: #fff3e0; color: #e65100; }
+
+    /* ── Chat area ── */
+    .chat-area { display: flex; flex-direction: column; }
+
+    .chat-box {
+      background: var(--surface);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1rem;
+      height: 52vh;
+      min-height: 300px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      box-shadow: var(--shadow);
+      flex: 1;
+    }
+    .chat-box::-webkit-scrollbar { width: 5px; }
+    .chat-box::-webkit-scrollbar-thumb { background: var(--green-border); border-radius: 10px; }
+
+    /* Messages */
+    .msg-user { text-align: right; margin: 10px 0; animation: slideIn 0.25s ease; }
+    .msg-bot  { text-align: left;  margin: 10px 0; animation: slideIn 0.25s ease; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble {
+      display: inline-block; padding: 11px 15px;
+      border-radius: 16px; max-width: 82%; font-size: 14px;
+      line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+      text-align: left;
+    }
+    .bubble-user {
+      background: var(--green-mid); color: white;
+      border-radius: 16px 16px 4px 16px;
+    }
+    .bubble-bot {
+      background: #f0f5ec; color: var(--text);
+      border-radius: 16px 16px 16px 4px;
+      border: 1px solid #dde8d5;
+    }
+    .bubble-img {
+      background: #e3f2fd; color: #0d47a1;
+      border-radius: 16px 16px 16px 4px;
+      border: 1px solid #bbdefb;
+    }
+    .lang-badge {
+      font-size: 10px; background: var(--green-bg); color: var(--green);
+      border: 1px solid var(--green-border);
+      border-radius: 6px; padding: 1px 6px; margin-left: 6px;
+      vertical-align: middle; font-weight: 700;
+    }
+    .typing-dots span {
+      display: inline-block; width: 7px; height: 7px;
+      background: var(--muted); border-radius: 50%; margin: 0 2px;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40% { transform: translateY(-7px); }
+    }
+
+    /* ── Input area ── */
+    .input-section {
+      background: var(--surface);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-top: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .img-preview-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    #img-preview {
+      max-height: 70px; border-radius: 10px;
+      border: 1.5px solid var(--green-border); display: none;
+    }
+    #img-clear {
+      display: none; cursor: pointer; color: #c62828;
+      font-size: 20px; font-weight: 700; line-height: 1;
+    }
+    #img-name { font-size: 12px; color: var(--muted); }
+
+    .input-row { display: flex; gap: 8px; align-items: stretch; }
+
+    .photo-btn {
+      background: var(--green-bg); border: 1.5px solid var(--green-border);
+      border-radius: 12px; padding: 0 12px; font-size: 18px;
+      cursor: pointer; display: flex; align-items: center;
+      transition: background 0.18s;
+      white-space: nowrap;
+    }
+    .photo-btn:hover { background: var(--green-border); }
+
+    /* Voice button */
+    #voiceBtn {
+      background: var(--green-bg); border: 1.5px solid var(--green-border);
+      border-radius: 12px; padding: 0 12px; font-size: 18px;
+      cursor: pointer; display: flex; align-items: center;
+      transition: all 0.2s; white-space: nowrap;
+      color: var(--green-mid);
+    }
+    #voiceBtn:hover { background: var(--green-border); }
+    #voiceBtn.listening {
+      background: #ffebee; border-color: #ef5350;
+      animation: pulse-red 1s infinite;
+    }
+    @keyframes pulse-red {
+      0%,100% { box-shadow: 0 0 0 0 rgba(239,83,80,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(239,83,80,0); }
+    }
+    #voiceBtn:not(.supported) { opacity: 0.4; cursor: not-allowed; }
+
+    #userInput {
+      border: 1.5px solid var(--green-border); border-radius: 12px;
+      padding: 10px 14px; font-size: 14px; font-family: inherit;
+      flex: 1; outline: none; transition: border-color 0.2s;
+      resize: none; min-height: 42px; max-height: 120px;
+      color: var(--text);
+    }
+    #userInput:focus { border-color: var(--green-mid); }
+    #userInput::placeholder { color: #a0bba0; }
+
+    #sendBtn {
+      background: var(--green-mid); color: white;
+      border: none; border-radius: 12px; padding: 0 20px;
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: background 0.18s, transform 0.1s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    #sendBtn:hover { background: var(--green); }
+    #sendBtn:active { transform: scale(0.97); }
+    #sendBtn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* ── Floating crop btn ── */
+    #cropBtn {
+      position: fixed; bottom: 22px; right: 22px;
+      background: var(--accent); color: #5a3e00;
+      border: none; border-radius: 50px; padding: 12px 20px;
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      box-shadow: 0 4px 16px rgba(249,168,37,0.4);
+      cursor: pointer; z-index: 200;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    #cropBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(249,168,37,0.5); }
+
+    /* ── Modal ── */
+    .modal-content { border-radius: var(--radius); border: none; overflow: hidden; }
+    .modal-header { background: var(--green-bg); border-bottom: 1.5px solid var(--green-border); }
+    .modal-title { color: var(--green-mid); font-weight: 700; }
+    .form-select, .form-control {
+      border: 1.5px solid var(--green-border); border-radius: 10px;
+      font-family: inherit; font-size: 14px;
+    }
+    .form-select:focus, .form-control:focus {
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.12);
+    }
+    .btn-success {
+      background: var(--green-mid); border: none; border-radius: 10px;
+      font-family: inherit; font-weight: 700;
+    }
+    .btn-success:hover { background: var(--green); }
+
+    /* Modal tabs */
+    .nav-tabs { border-bottom: 2px solid var(--green-border); }
+    .nav-tabs .nav-link {
+      color: var(--muted); font-family: inherit; font-size: 13px;
+      border: none; padding: 8px 16px; font-weight: 600;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--green-mid); border-bottom: 2px solid var(--green-mid);
+      background: none;
+    }
+
+    /* SMS form */
+    .sms-form { }
+    .sms-input-group { display: flex; gap: 8px; }
+    .phone-prefix {
+      background: var(--green-bg); border: 1.5px solid var(--green-border);
+      border-radius: 10px 0 0 10px; padding: 8px 12px;
+      font-size: 14px; color: var(--green-mid); font-weight: 600;
+      display: flex; align-items: center; white-space: nowrap;
+    }
+
+    /* Offline indicator */
+    #offline-indicator {
+      display: none; background: #fbe9e7; color: #c62828;
+      font-size: 12px; font-weight: 600; text-align: center;
+      padding: 6px; border-radius: 8px; margin-bottom: 6px;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 767px) {
+      .chat-box { height: 46vh; }
+      #cropBtn { bottom: 14px; right: 14px; padding: 10px 16px; font-size: 13px; }
+      .sidebar { display: contents; }
+      .sidebar .card-panel { order: 3; }
+      .sidebar .task-card { order: 2; }
+      .sidebar .hints-card { order: 4; }
+      .sidebar .weather-card { order: 1; }
+      .sidebar .mandi-panel { order: 5; }
+      .chat-area { order: 0; }
+    }
+
+    /* Welcome banner */
+    .welcome-banner {
+      background: linear-gradient(135deg, #e8f5e9, #f9fbe7);
+      border: 1.5px solid var(--green-border);
+      border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+    .welcome-banner .brand-name { color: var(--green-mid); font-weight: 800; font-size: 1.05rem; }
+  </style>
+</head>
+<body>
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner">
+  <span>📱 Add Khetika to your home screen for offline access!</span>
+  <div style="display:flex;gap:8px">
+    <button onclick="installPWA()">Install</button>
+    <button class="close-pwa" onclick="document.getElementById('pwa-banner').style.display='none'">✕</button>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar d-flex justify-content-between align-items-center">
+  <div class="navbar-brand">
+    <span class="leaf">🌿</span> Khetika
+    <span class="nav-tagline" data-i18n="tagline">Smart Farming Assistant</span>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="/knowledge" class="btn btn-sm btn-outline-success" style="font-family:inherit;font-size:12px;border-radius:8px" data-i18n="knowledgeBase">Knowledge Base</a>
+    <div class="lang-selector">
+      <span class="lang-flag" id="langFlag">🌐</span>
+      <select id="langPicker" onchange="switchLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="te">తెలుగు</option>
+        <option value="hi">हिंदी</option>
+        <option value="ta">தமிழ்</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+    </div>
+  </div>
+</nav>
+
+<div class="main-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Weather Card -->
+    <div class="weather-card" id="weatherCard">
+      <h6>🌤 Weather &amp; Farm Conditions</h6>
+      <div id="weatherContent">
+        <div class="weather-loading">📡 Fetching weather...</div>
+      </div>
+    </div>
+
+    <!-- Weekly Task Card -->
+    <div class="task-card" id="task-card">
+      <div class="week-pill" id="week-label">Week 1</div>
+      <div class="crop-name" id="crop-label"></div>
+      <p class="task-text" id="task-text"></p>
+    </div>
+
+    <!-- Quick Hints -->
+    <div class="card-panel hints-card">
+      <h6>⚡ <span data-i18n="quickHints">Quick Questions</span></h6>
+      <div class="hints-wrap" id="hintsWrap"></div>
+    </div>
+
+    <!-- Mandi Prices -->
+    <div class="card-panel mandi-panel">
+      <h6>💰 <span data-i18n="mandiTitle">Mandi Prices</span>
+        <span class="mandi-source-badge" id="mandiSourceBadge"></span>
+      </h6>
+      <div class="mandi-search">
+        <input id="mandiCommodity" placeholder="Tomato, Rice, Onion..." value="Tomato">
+        <button onclick="fetchMandiPrices()">🔍</button>
+      </div>
+      <div id="mandiResults">
+        <div class="weather-loading">Loading prices...</div>
+      </div>
+    </div>
+
+    <!-- About panel -->
+    <div class="card-panel d-none d-md-block">
+      <h6>ℹ️ <span data-i18n="aboutTitle">About Khetika</span></h6>
+      <p style="font-size:12px;color:var(--muted);margin:0;line-height:1.6" data-i18n="aboutText">
+        Ask about crops, diseases, soil, irrigation, pests, or market prices. Upload a photo for instant diagnosis!
+      </p>
+    </div>
+
+  </aside>
+
+  <!-- Chat area -->
+  <div class="chat-area">
+
+    <!-- Offline indicator -->
+    <div id="offline-indicator">⚡ You're offline — responses unavailable</div>
+
+    <!-- Chat box -->
+    <div class="chat-box" id="chatBox">
+      <div class="msg-bot">
+        <div class="welcome-banner">
+          <div class="brand-name">🌿 Khetika</div>
+          <div style="font-size:14px;margin-top:4px;color:#2d4a2d" id="welcomeMsg">
+            Namaste! Ask me about crops, diseases, soil, irrigation, or mandi prices — in <strong>Telugu, Hindi, or English</strong>. You can also <strong>upload a leaf photo</strong> for instant diagnosis!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input section -->
+    <div class="input-section">
+      <div class="img-preview-row" id="imgPreviewRow" style="display:none">
+        <img id="img-preview" src="" alt="preview">
+        <span id="img-clear" onclick="clearImage()" title="Remove">✕</span>
+        <small id="img-name"></small>
+      </div>
+      <div class="input-row">
+        <label class="photo-btn" for="imageInput" title="Upload crop photo">📷</label>
+        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="previewImage(this)">
+        <button id="voiceBtn" onclick="toggleVoice()" title="Voice input (hold to speak)">🎙️</button>
+        <textarea id="userInput" rows="1" placeholder="Type your farming question..." autocomplete="off"></textarea>
+        <button id="sendBtn" onclick="sendMessage()">
+          <span>➤</span>
+        </button>
+      </div>
+      <small style="font-size:11px;color:var(--muted);margin-top:6px;display:block" data-i18n="inputTip">
+        Tip: Tap 🎙️ to speak, 📷 to upload a leaf photo for diagnosis
+      </small>
+    </div>
+
+  </div>
+</div>
+
+<!-- Floating crop profile button -->
+<button id="cropBtn" onclick="openProfileModal()">
+  🌾 <span data-i18n="myCrop">My Crop</span>
+</button>
+
+<!-- Crop Profile Modal (with tabs for Crop, SMS) -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">🌾 <span data-i18n="setCropProfile">Set Your Crop Profile</span></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs px-3 pt-2" id="profileTabs">
+          <li class="nav-item">
+            <button class="nav-link active" onclick="showTab('cropTab', this)">🌱 Crop</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" onclick="showTab('smsTab', this)">📱 SMS Alerts</button>
+          </li>
+        </ul>
+
+        <!-- Crop Tab -->
+        <div id="cropTab" class="p-3">
+          <p class="text-muted" style="font-size:13px" data-i18n="profileDesc">
+            Khetika will remind you what to do every week based on your crop and sowing date.
+          </p>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:13px;font-weight:600" data-i18n="cropLabel">Crop Name</label>
+            <select class="form-select" id="cropSelect">
+              <option value="" data-i18n="selectCrop">-- Select crop --</option>
+              {% for crop in crops %}
+              <option value="{{ crop }}" {% if profile and profile[0]==crop %}selected{% endif %}>{{ crop.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:13px;font-weight:600" data-i18n="sowingLabel">Sowing Date</label>
+            <input type="date" class="form-control" id="sowingDate"
+                   value="{{ profile[1] if profile else '' }}">
+          </div>
+          <div id="profile-result" style="display:none;font-size:13px" class="alert alert-success"></div>
+          <button class="btn btn-success w-100" onclick="saveProfile()" data-i18n="saveProfile">Save Profile</button>
+        </div>
+
+        <!-- SMS Alerts Tab -->
+        <div id="smsTab" class="p-3" style="display:none">
+          <p class="text-muted" style="font-size:13px">
+            📱 Get <strong>weekly farming tips & task reminders</strong> via SMS directly to your phone.
+          </p>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:13px;font-weight:600">Mobile Number</label>
+            <div style="display:flex;gap:0">
+              <div class="phone-prefix">🇮🇳 +91</div>
+              <input type="tel" class="form-control" id="smsPhone" placeholder="9876543210"
+                     style="border-radius:0 10px 10px 0;border-left:none" maxlength="10">
+            </div>
+            <small class="text-muted" style="font-size:11px">10-digit mobile number without country code</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:13px;font-weight:600">Preferred Language for SMS</label>
+            <select class="form-select" id="smsLang">
+              <option value="en">English</option>
+              <option value="te">Telugu</option>
+              <option value="hi">Hindi</option>
+              <option value="ta">Tamil</option>
+              <option value="kn">Kannada</option>
+            </select>
+          </div>
+          <div id="sms-result" style="display:none;font-size:13px" class="alert alert-success"></div>
+          <div id="sms-error" style="display:none;font-size:13px" class="alert alert-danger"></div>
+          <button class="btn btn-success w-100" onclick="subscribeSMS()">📱 Subscribe to SMS Alerts</button>
+          <p class="text-muted mt-2" style="font-size:11px;text-align:center">
+            You'll receive weekly crop tips. Reply STOP anytime to unsubscribe.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ─── i18n Translations ────────────────────────────────────────────────────────
+const LANGS = {
+  en: {
+    flag: "🌐", code: "en",
+    tagline: "Smart Farming Assistant",
+    knowledgeBase: "Knowledge Base",
+    quickHints: "Quick Questions",
+    aboutTitle: "About Khetika",
+    mandiTitle: "Mandi Prices",
+    aboutText: "Ask about crops, diseases, soil, irrigation, pests, or market prices. Upload a photo for instant diagnosis!",
+    welcomeMsg: `Namaste! Ask me about crops, diseases, soil, irrigation, or mandi prices — in <strong>Telugu, Hindi, or English</strong>. Tap 🎙️ to speak, or 📷 to upload a leaf photo for instant diagnosis!`,
+    inputTip: "Tip: Tap 🎙️ to speak, 📷 to upload a leaf photo for diagnosis",
+    myCrop: "My Crop",
+    setCropProfile: "Set Your Crop Profile",
+    profileDesc: "Khetika will remind you what to do every week based on your crop and sowing date.",
+    cropLabel: "Crop Name",
+    selectCrop: "-- Select crop --",
+    sowingLabel: "Sowing Date",
+    saveProfile: "Save Profile",
+    sendPlaceholder: "Type your farming question or tap 🎙️...",
+    hints: [
+      { label: "Rice fertilizer", text: "What fertilizer for rice crop?" },
+      { label: "Cotton pest", text: "Best pesticide for cotton bollworm?" },
+      { label: "Soil health", text: "How to improve soil health?" },
+      { label: "Irrigation", text: "When to irrigate wheat crop?" },
+      { label: "Mandi price", text: "What is current tomato mandi price?" }
+    ],
+    weeklyTaskTitle: "🗓 This Week's Task",
+    saved: (week, task) => `Saved! Week ${week}: ${task}`,
+    thinking: "Khetika is thinking...",
+    photoDisplay: "📷 Photo uploaded for diagnosis",
+    voiceDisplay: "🎙️ Voice message: ",
+    errorMsg: "Sorry, something went wrong. Please try again.",
+    offline: "⚡ You're offline. Please reconnect to chat."
+  },
+  te: {
+    flag: "🇮🇳", code: "te",
+    tagline: "స్మార్ట్ వ్యవసాయ సహాయకుడు",
+    knowledgeBase: "జ్ఞాన నిధి",
+    quickHints: "త్వరిత ప్రశ్నలు",
+    aboutTitle: "ఖేతికా గురించి",
+    mandiTitle: "మండి ధరలు",
+    aboutText: "పంటలు, వ్యాధులు, నేల, నీటిపారుదల, పురుగులు లేదా మార్కెట్ ధరల గురించి అడగండి.",
+    welcomeMsg: `నమస్కారం! పంటలు, వ్యాధులు, నేల, నీటిపారుదల లేదా మండి ధరల గురించి అడగండి. 🎙️ నొక్కి మాట్లాడండి లేదా 📷 ఫోటో అప్‌లోడ్ చేయండి!`,
+    inputTip: "చిట్కా: 🎙️ మాట్లాడండి లేదా ఆకు ఫోటో 📷 అప్‌లోడ్ చేయండి",
+    myCrop: "నా పంట",
+    setCropProfile: "మీ పంట వివరాలు సెట్ చేయండి",
+    profileDesc: "మీ పంట మరియు విత్తన తేదీ ఆధారంగా ఖేతికా ప్రతి వారం ఏమి చేయాలో గుర్తు చేస్తుంది.",
+    cropLabel: "పంట పేరు",
+    selectCrop: "-- పంటను ఎంచుకోండి --",
+    sowingLabel: "విత్తన తేదీ",
+    saveProfile: "సేవ్ చేయండి",
+    sendPlaceholder: "మీ వ్యవసాయ ప్రశ్న టైప్ చేయండి లేదా 🎙️ నొక్కండి...",
+    hints: [
+      { label: "వరి ఎరువు", text: "వరికి ఏ ఎరువు వేయాలి?" },
+      { label: "పత్తి పురుగు", text: "పత్తిలో గొంగళి పురుగుకు ఏ పురుగుమందు?" },
+      { label: "నేల ఆరోగ్యం", text: "నేల ఆరోగ్యాన్ని ఎలా మెరుగుపరచాలి?" },
+      { label: "నీటిపారుదల", text: "గోధుమ పంటకు ఎప్పుడు నీళ్ళు పెట్టాలి?" },
+      { label: "మండి ధర", text: "ఈరోజు టమాటా మండి ధర ఎంత?" }
+    ],
+    weeklyTaskTitle: "🗓 ఈ వారం పని",
+    saved: (week, task) => `సేవ్ అయింది! వారం ${week}: ${task}`,
+    thinking: "ఖేతికా ఆలోచిస్తోంది...",
+    photoDisplay: "📷 నిర్ధారణ కోసం ఫోటో అప్‌లోడ్ చేయబడింది",
+    voiceDisplay: "🎙️ వాయిస్ సందేశం: ",
+    errorMsg: "క్షమించండి, ఏదో తప్పు జరిగింది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+    offline: "⚡ మీరు ఆఫ్‌లైన్‌లో ఉన్నారు."
+  },
+  hi: {
+    flag: "🇮🇳", code: "hi",
+    tagline: "स्मार्ट कृषि सहायक",
+    knowledgeBase: "ज्ञान आधार",
+    quickHints: "त्वरित प्रश्न",
+    aboutTitle: "खेतिका के बारे में",
+    mandiTitle: "मंडी भाव",
+    aboutText: "फसल, रोग, मिट्टी, सिंचाई, कीट या बाजार भाव के बारे में पूछें।",
+    welcomeMsg: `नमस्ते! फसल, रोग, मिट्टी, सिंचाई या मंडी भाव के बारे में पूछें। 🎙️ बोलने के लिए टैप करें या 📷 पत्ती की फोटो अपलोड करें!`,
+    inputTip: "सुझाव: 🎙️ बोलें या पत्ती की फोटो 📷 अपलोड करें",
+    myCrop: "मेरी फसल",
+    setCropProfile: "अपनी फसल प्रोफ़ाइल सेट करें",
+    profileDesc: "खेतिका आपकी फसल और बुवाई की तारीख के आधार पर हर हफ्ते याद दिलाएगा।",
+    cropLabel: "फसल का नाम",
+    selectCrop: "-- फसल चुनें --",
+    sowingLabel: "बुवाई की तारीख",
+    saveProfile: "सेव करें",
+    sendPlaceholder: "अपना कृषि प्रश्न टाइप करें या 🎙️ टैप करें...",
+    hints: [
+      { label: "धान खाद", text: "धान की फसल के लिए कौन सी खाद डालें?" },
+      { label: "कपास कीट", text: "कपास में बॉलवर्म के लिए कौन सा कीटनाशक?" },
+      { label: "मिट्टी स्वास्थ्य", text: "मिट्टी की उर्वरता कैसे बढ़ाएं?" },
+      { label: "सिंचाई", text: "गेहूं की फसल को कब पानी दें?" },
+      { label: "मंडी भाव", text: "आज टमाटर का मंडी भाव क्या है?" }
+    ],
+    weeklyTaskTitle: "🗓 इस हफ्ते का काम",
+    saved: (week, task) => `सेव हो गया! सप्ताह ${week}: ${task}`,
+    thinking: "खेतिका सोच रहा है...",
+    photoDisplay: "📷 निदान के लिए फोटो अपलोड की गई",
+    voiceDisplay: "🎙️ वॉइस संदेश: ",
+    errorMsg: "क्षमा करें, कुछ गलत हो गया। कृपया फिर से प्रयास करें।",
+    offline: "⚡ आप ऑफलाइन हैं।"
+  },
+  ta: {
+    flag: "🇮🇳", code: "ta",
+    tagline: "ஸ்மார்ட் விவசாய உதவியாளர்",
+    knowledgeBase: "அறிவுத் தளம்",
+    quickHints: "விரைவு கேள்விகள்",
+    aboutTitle: "கேதிகா பற்றி",
+    mandiTitle: "சந்தை விலைகள்",
+    aboutText: "பயிர்கள், நோய்கள், மண், நீர்ப்பாசனம் அல்லது சந்தை விலைகள் பற்றி கேளுங்கள்.",
+    welcomeMsg: `வணக்கம்! பயிர்கள், நோய்கள், மண், நீர்ப்பாசனம் அல்லது மண்டி விலைகள் பற்றி கேளுங்கள். 🎙️ பேசவும் அல்லது 📷 புகைப்படம் பதிவேற்றவும்!`,
+    inputTip: "குறிப்பு: 🎙️ பேசவும் அல்லது இலை புகைப்படம் 📷 பதிவேற்றவும்",
+    myCrop: "என் பயிர்",
+    setCropProfile: "உங்கள் பயிர் சுயவிவரத்தை அமைக்கவும்",
+    profileDesc: "உங்கள் பயிர் மற்றும் விதைப்பு தேதியின் அடிப்படையில் கேதிகா ஒவ்வொரு வாரமும் நினைவூட்டும்.",
+    cropLabel: "பயிர் பெயர்",
+    selectCrop: "-- பயிரைத் தேர்ந்தெடுக்கவும் --",
+    sowingLabel: "விதைப்பு தேதி",
+    saveProfile: "சேமிக்கவும்",
+    sendPlaceholder: "உங்கள் விவசாய கேள்வியை தட்டச்சு அல்லது 🎙️ தட்டவும்...",
+    hints: [
+      { label: "நெல் உரம்", text: "நெல் பயிருக்கு எந்த உரம் போட வேண்டும்?" },
+      { label: "பருத்தி பூச்சி", text: "பருத்தியில் காய்ப்புழுவுக்கு எந்த பூச்சிக்கொல்லி?" },
+      { label: "மண் ஆரோக்கியம்", text: "மண்ணின் வளத்தை எவ்வாறு மேம்படுத்துவது?" },
+      { label: "நீர்ப்பாசனம்", text: "கோதுமை பயிருக்கு எப்போது தண்ணீர் பாய்ச்ச வேண்டும்?" },
+      { label: "சந்தை விலை", text: "இன்று தக்காளி மண்டி விலை என்ன?" }
+    ],
+    weeklyTaskTitle: "🗓 இந்த வாரம் வேலை",
+    saved: (week, task) => `சேமிக்கப்பட்டது! வாரம் ${week}: ${task}`,
+    thinking: "கேதிகா யோசிக்கிறது...",
+    photoDisplay: "📷 கண்டறிதலுக்கு புகைப்படம் பதிவேற்றப்பட்டது",
+    voiceDisplay: "🎙️ குரல் செய்தி: ",
+    errorMsg: "மன்னிக்கவும், ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.",
+    offline: "⚡ நீங்கள் ஆஃப்லைனில் இருக்கிறீர்கள்."
+  },
+  kn: {
+    flag: "🇮🇳", code: "kn",
+    tagline: "ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಸಹಾಯಕ",
+    knowledgeBase: "ಜ್ಞಾನ ನೆಲೆ",
+    quickHints: "ತ್ವರಿತ ಪ್ರಶ್ನೆಗಳು",
+    aboutTitle: "ಖೇತಿಕಾ ಬಗ್ಗೆ",
+    mandiTitle: "ಮಂಡಿ ಬೆಲೆಗಳು",
+    aboutText: "ಬೆಳೆಗಳು, ರೋಗಗಳು, ಮಣ್ಣು, ನೀರಾವರಿ, ಕೀಟ ಅಥವಾ ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
+    welcomeMsg: `ನಮಸ್ಕಾರ! ಬೆಳೆಗಳು, ರೋಗಗಳು, ಮಣ್ಣು, ನೀರಾವರಿ ಅಥವಾ ಮಂಡಿ ಬೆಲೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ. 🎙️ ಮಾತನಾಡಿ ಅಥವಾ 📷 ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ!`,
+    inputTip: "ಸಲಹೆ: 🎙️ ಮಾತನಾಡಿ ಅಥವಾ ಎಲೆ ಫೋಟೋ 📷 ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+    myCrop: "ನನ್ನ ಬೆಳೆ",
+    setCropProfile: "ನಿಮ್ಮ ಬೆಳೆ ಪ್ರೊಫೈಲ್ ಹೊಂದಿಸಿ",
+    profileDesc: "ನಿಮ್ಮ ಬೆಳೆ ಮತ್ತು ಬಿತ್ತನೆ ದಿನಾಂಕದ ಆಧಾರದ ಮೇಲೆ ಖೇತಿಕಾ ಪ್ರತಿ ವಾರ ನೆನಪಿಸುತ್ತದೆ.",
+    cropLabel: "ಬೆಳೆ ಹೆಸರು",
+    selectCrop: "-- ಬೆಳೆ ಆಯ್ಕೆ ಮಾಡಿ --",
+    sowingLabel: "ಬಿತ್ತನೆ ದಿನಾಂಕ",
+    saveProfile: "ಉಳಿಸಿ",
+    sendPlaceholder: "ನಿಮ್ಮ ಕೃಷಿ ಪ್ರಶ್ನೆ ಟೈಪ್ ಮಾಡಿ ಅಥವಾ 🎙️ ಟ್ಯಾಪ್ ಮಾಡಿ...",
+    hints: [
+      { label: "ಭತ್ತ ಗೊಬ್ಬರ", text: "ಭತ್ತದ ಬೆಳೆಗೆ ಯಾವ ಗೊಬ್ಬರ ಹಾಕಬೇಕು?" },
+      { label: "ಹತ್ತಿ ಕೀಟ", text: "ಹತ್ತಿಯಲ್ಲಿ ಬಾಲ್‌ವರ್ಮ್‌ಗೆ ಯಾವ ಕೀಟನಾಶಕ?" },
+      { label: "ಮಣ್ಣಿನ ಆರೋಗ್ಯ", text: "ಮಣ್ಣಿನ ಫಲವತ್ತತೆ ಹೇಗೆ ಹೆಚ್ಚಿಸುವುದು?" },
+      { label: "ನೀರಾವರಿ", text: "ಗೋಧಿ ಬೆಳೆಗೆ ಯಾವಾಗ ನೀರು ಕೊಡಬೇಕು?" },
+      { label: "ಮಂಡಿ ಬೆಲೆ", text: "ಇಂದು ಟೊಮೇಟೊ ಮಂಡಿ ಬೆಲೆ ಎಷ್ಟು?" }
+    ],
+    weeklyTaskTitle: "🗓 ಈ ವಾರದ ಕೆಲಸ",
+    saved: (week, task) => `ಉಳಿಸಲಾಯಿತು! ವಾರ ${week}: ${task}`,
+    thinking: "ಖೇತಿಕಾ ಯೋಚಿಸುತ್ತಿದೆ...",
+    photoDisplay: "📷 ರೋಗ ಪತ್ತೆಗೆ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ",
+    voiceDisplay: "🎙️ ಧ್ವನಿ ಸಂದೇಶ: ",
+    errorMsg: "ಕ್ಷಮಿಸಿ, ಏನೋ ತಪ್ಪಾಯಿತು. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    offline: "⚡ ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ."
+  }
+};
+
+let currentLang = "en";
+let selectedFile = null;
+let recognition = null;
+let isListening = false;
+let deferredInstallPrompt = null;
+
+// ─── PWA Service Worker ───────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/sw.js').then(reg => {
+      console.log('[PWA] Service Worker registered');
+    }).catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('pwa-banner').style.display = 'flex';
+});
+
+function installPWA() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(() => {
+      deferredInstallPrompt = null;
+      document.getElementById('pwa-banner').style.display = 'none';
+    });
+  }
+}
+
+// ─── Offline detection ────────────────────────────────────────────────────────
+function updateOnlineStatus() {
+  const L = LANGS[currentLang] || LANGS.en;
+  const indicator = document.getElementById('offline-indicator');
+  if (!navigator.onLine) {
+    indicator.style.display = 'block';
+    indicator.textContent = L.offline;
+  } else {
+    indicator.style.display = 'none';
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// ─── Language Switcher ────────────────────────────────────────────────────────
+function switchLanguage(lang) {
+  if (!LANGS[lang]) return;
+  currentLang = lang;
+  const L = LANGS[lang];
+
+  document.getElementById("langFlag").textContent = L.flag;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (L[key] !== undefined) el.innerHTML = L[key];
+  });
+  document.getElementById("userInput").placeholder = L.sendPlaceholder;
+  document.getElementById("welcomeMsg").innerHTML = L.welcomeMsg;
+  renderHints(lang);
+  updateOnlineStatus();
+  localStorage.setItem("khetika_lang", lang);
+
+  // Update voice recognition language
+  if (recognition) {
+    recognition.lang = getLangCode(lang);
+  }
+}
+
+function getLangCode(lang) {
+  const codes = { en: 'en-IN', te: 'te-IN', hi: 'hi-IN', ta: 'ta-IN', kn: 'kn-IN' };
+  return codes[lang] || 'en-IN';
+}
+
+function renderHints(lang) {
+  const L = LANGS[lang] || LANGS.en;
+  const wrap = document.getElementById("hintsWrap");
+  wrap.innerHTML = "";
+  L.hints.forEach(h => {
+    const btn = document.createElement("button");
+    btn.className = "hint-chip";
+    btn.textContent = h.label;
+    btn.onclick = () => setHint(h.text);
+    wrap.appendChild(btn);
+  });
+}
+
+// ─── Voice Input ──────────────────────────────────────────────────────────────
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('voiceBtn').classList.remove('supported');
+    document.getElementById('voiceBtn').title = 'Voice input not supported in this browser';
+    return;
+  }
+
+  document.getElementById('voiceBtn').classList.add('supported');
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = getLangCode(currentLang);
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('voiceBtn').classList.add('listening');
+    document.getElementById('voiceBtn').title = 'Listening... Tap to stop';
+    document.getElementById('userInput').placeholder = '🎙️ Listening...';
+  };
+
+  recognition.onresult = (event) => {
+    let interim = '';
+    let final = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += transcript;
+      else interim += transcript;
+    }
+    const input = document.getElementById('userInput');
+    input.value = final || interim;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    const btn = document.getElementById('voiceBtn');
+    btn.classList.remove('listening');
+    btn.title = 'Voice input';
+    const L = LANGS[currentLang] || LANGS.en;
+    document.getElementById('userInput').placeholder = L.sendPlaceholder;
+
+    // Auto-send if we captured something
+    const val = document.getElementById('userInput').value.trim();
+    if (val) {
+      setTimeout(() => sendMessage(), 300);
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.warn('[Voice] Error:', event.error);
+    isListening = false;
+    document.getElementById('voiceBtn').classList.remove('listening');
+  };
+}
+
+function toggleVoice() {
+  if (!recognition) {
+    alert('Voice input is not supported in your browser. Try Chrome or Edge.');
+    return;
+  }
+  if (isListening) {
+    recognition.stop();
+  } else {
+    recognition.lang = getLangCode(currentLang);
+    recognition.start();
+  }
+}
+
+// ─── Weather Integration ──────────────────────────────────────────────────────
+function fetchWeather() {
+  const updateWeatherCard = (data) => {
+    const { weather, note } = data;
+    const iconUrl = weather.icon
+      ? `https://openweathermap.org/img/wn/${weather.icon}.png`
+      : '';
+    const isLive = data.source === 'live';
+
+    document.getElementById('weatherContent').innerHTML = `
+      <div class="weather-main">
+        ${iconUrl ? `<img src="${iconUrl}" style="width:48px;height:48px" alt="">` : '<span style="font-size:2rem">🌤</span>'}
+        <div>
+          <div class="weather-temp">${weather.temp}°C</div>
+          <div class="weather-info">
+            <div class="desc">${weather.description}</div>
+            <div>💧 ${weather.humidity}% humidity • 💨 ${weather.wind_speed} km/h</div>
+            <div style="font-size:11px;color:#888">${weather.city}</div>
+          </div>
+        </div>
+      </div>
+      <div class="weather-advice">🌾 ${weather.advice}</div>
+      ${note ? `<div class="weather-badge" style="background:#fff3e0;color:#e65100;margin-top:4px;font-size:10px">⚠️ Sample data — add API key</div>` : ''}
+    `;
+  };
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        fetch(`/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
+          .then(r => r.json()).then(updateWeatherCard).catch(() => {
+            fetch('/weather').then(r => r.json()).then(updateWeatherCard);
+          });
+      },
+      () => {
+        fetch('/weather').then(r => r.json()).then(updateWeatherCard);
+      },
+      { timeout: 5000 }
+    );
+  } else {
+    fetch('/weather').then(r => r.json()).then(updateWeatherCard);
+  }
+}
+
+// ─── Mandi Prices ─────────────────────────────────────────────────────────────
+function fetchMandiPrices() {
+  const commodity = document.getElementById('mandiCommodity').value.trim() || 'Tomato';
+  document.getElementById('mandiResults').innerHTML = '<div class="weather-loading">🔄 Fetching prices...</div>';
+  document.getElementById('mandiSourceBadge').textContent = '';
+
+  fetch(`/mandi?commodity=${encodeURIComponent(commodity)}`)
+    .then(r => r.json())
+    .then(data => {
+      const records = data.data || [];
+      const isLive = data.source === 'live';
+      const badge = document.getElementById('mandiSourceBadge');
+      badge.textContent = isLive ? '🟢 Live' : '🟡 Sample';
+      badge.className = 'mandi-source-badge ' + (isLive ? 'mandi-source-live' : 'mandi-source-sample');
+
+      if (!records.length) {
+        document.getElementById('mandiResults').innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">No data found for this commodity</div>';
+        return;
+      }
+
+      const html = records.slice(0, 5).map(r => `
+        <div class="mandi-row">
+          <div>
+            <div class="mandi-market">${r.market || r.Market}</div>
+            <div style="font-size:10px;color:var(--muted)">${r.state || r.State || ''} · ${r.arrival_date || r.Arrival_Date || ''}</div>
+          </div>
+          <div class="mandi-price">
+            ₹${r.modal_price || r.Modal_Price}<small>/qt</small>
+            <div style="font-size:10px;font-weight:400;color:var(--muted)">
+              ₹${r.min_price || r.Min_Price}–${r.max_price || r.Max_Price}
+            </div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('mandiResults').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('mandiResults').innerHTML = '<div style="font-size:12px;color:#c62828;text-align:center;padding:8px">Failed to load prices</div>';
+    });
+}
+
+// ─── Image Preview ────────────────────────────────────────────────────────────
+function previewImage(input) {
+  if (!input.files || !input.files[0]) return;
+  selectedFile = input.files[0];
+  const url = URL.createObjectURL(selectedFile);
+  document.getElementById("img-preview").src = url;
+  document.getElementById("img-preview").style.display = "inline-block";
+  document.getElementById("img-clear").style.display = "inline";
+  document.getElementById("img-name").textContent = selectedFile.name;
+  document.getElementById("imgPreviewRow").style.display = "flex";
+}
+
+function clearImage() {
+  selectedFile = null;
+  document.getElementById("imageInput").value = "";
+  document.getElementById("img-preview").style.display = "none";
+  document.getElementById("img-clear").style.display = "none";
+  document.getElementById("img-name").textContent = "";
+  document.getElementById("imgPreviewRow").style.display = "none";
+}
+
+// ─── Send Message ─────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById("userInput");
+  const msg = input.value.trim();
+  if (!msg && !selectedFile) return;
+
+  if (!navigator.onLine) {
+    const L = LANGS[currentLang] || LANGS.en;
+    appendMsg(L.offline, "bot", "");
+    return;
+  }
+
+  const L = LANGS[currentLang] || LANGS.en;
+  const displayMsg = msg || L.photoDisplay;
+  appendMsg(displayMsg, "user", "");
+  input.value = "";
+  input.style.height = "auto";
+  document.getElementById("sendBtn").disabled = true;
+
+  const typingDiv = appendTyping(L.thinking);
+
+  try {
+    const formData = new FormData();
+    if (msg) formData.append("message", msg);
+    if (selectedFile) formData.append("image", selectedFile);
+    formData.append("ui_lang", currentLang);
+    clearImage();
+
+    const res = await fetch("/chat", { method: "POST", body: formData });
+    const data = await res.json();
+    typingDiv.remove();
+    if (!res.ok) {
+      appendMsg(data.error || L.errorMsg, "bot", "");
+    } else {
+      appendMsg(data.reply, "bot", data.lang, selectedFile ? "bubble-img" : "bubble-bot");
+    }
+  } catch (e) {
+    typingDiv.remove();
+    appendMsg(L.errorMsg, "bot", "");
+  }
+  document.getElementById("sendBtn").disabled = false;
+}
+
+function appendMsg(text, role, lang, customBubble = null) {
+  const box = document.getElementById("chatBox");
+  const div = document.createElement("div");
+  div.className = role === "user" ? "msg-user" : "msg-bot";
+  const langTag = (lang && lang !== "en") ? `<span class="lang-badge">${lang}</span>` : "";
+  const cls = customBubble || `bubble-${role}`;
+  div.innerHTML = `<div class="bubble ${cls}">${escapeHtml(text)}${langTag}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+function appendTyping(text) {
+  const box = document.getElementById("chatBox");
+  const div = document.createElement("div");
+  div.className = "msg-bot";
+  div.innerHTML = `<div class="bubble bubble-bot" style="color:#888;font-style:italic;font-size:13px">
+    <span class="typing-dots"><span></span><span></span><span></span></span> ${text}
+  </div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;").replace(/\n/g,"<br>");
+}
+
+function setHint(text) {
+  const inp = document.getElementById("userInput");
+  inp.value = text;
+  inp.focus();
+  inp.style.height = "auto";
+  inp.style.height = inp.scrollHeight + "px";
+}
+
+// ─── Crop Profile ─────────────────────────────────────────────────────────────
+function openProfileModal() {
+  new bootstrap.Modal(document.getElementById("profileModal")).show();
+}
+
+function showTab(tabId, btn) {
+  document.getElementById('cropTab').style.display = 'none';
+  document.getElementById('smsTab').style.display = 'none';
+  document.getElementById(tabId).style.display = 'block';
+  document.querySelectorAll('#profileTabs .nav-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function saveProfile() {
+  const L = LANGS[currentLang] || LANGS.en;
+  const crop = document.getElementById("cropSelect").value;
+  const date = document.getElementById("sowingDate").value;
+  if (!crop || !date) { alert(L.selectCrop); return; }
+
+  const res = await fetch("/profile/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ crop_name: crop, sowing_date: date })
+  });
+  const data = await res.json();
+
+  const el = document.getElementById("profile-result");
+  el.style.display = "block";
+  el.textContent = L.saved(data.week, data.task);
+  showWeeklyTask(data.crop, data.week, data.task);
+  setTimeout(() => bootstrap.Modal.getInstance(document.getElementById("profileModal")).hide(), 2000);
+}
+
+async function loadWeeklyTask() {
+  try {
+    const res = await fetch("/profile/weekly_task");
+    const data = await res.json();
+    if (data.task) showWeeklyTask(data.crop, data.week, data.task);
+  } catch(e) {}
+}
+
+function showWeeklyTask(crop, week, task) {
+  document.getElementById("task-card").style.display = "block";
+  document.getElementById("week-label").textContent = `Week ${week}`;
+  document.getElementById("crop-label").textContent = crop.charAt(0).toUpperCase() + crop.slice(1);
+  document.getElementById("task-text").textContent = task;
+}
+
+// ─── SMS Subscription ─────────────────────────────────────────────────────────
+async function subscribeSMS() {
+  const phone = document.getElementById('smsPhone').value.trim();
+  const lang = document.getElementById('smsLang').value;
+  const crop = document.getElementById('cropSelect').value;
+
+  const errEl = document.getElementById('sms-error');
+  const resEl = document.getElementById('sms-result');
+  errEl.style.display = 'none';
+  resEl.style.display = 'none';
+
+  if (!phone || phone.length !== 10 || !/^\d+$/.test(phone)) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Please enter a valid 10-digit mobile number.';
+    return;
+  }
+
+  try {
+    const res = await fetch('/sms/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ phone, lang, crop })
+    });
+    const data = await res.json();
+    if (data.success) {
+      resEl.style.display = 'block';
+      resEl.textContent = `✅ Subscribed! ${data.sms_sent ? 'Welcome SMS sent to +91' + phone : 'You will receive weekly tips.'}`;
+    } else {
+      throw new Error(data.error || 'Subscription failed');
+    }
+  } catch (e) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Subscription failed: ' + e.message;
+  }
+}
+
+// ─── Auto-resize textarea ─────────────────────────────────────────────────────
+document.getElementById("userInput").addEventListener("input", function() {
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 120) + "px";
+});
+
+document.getElementById("userInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// ─── Mandi commodity input Enter key ─────────────────────────────────────────
+document.getElementById("mandiCommodity").addEventListener("keydown", e => {
+  if (e.key === "Enter") fetchMandiPrices();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  const saved = localStorage.getItem("khetika_lang") || "en";
+  document.getElementById("langPicker").value = saved;
+  switchLanguage(saved);
+  loadWeeklyTask();
+  initVoice();
+  fetchWeather();
+  fetchMandiPrices();
+  updateOnlineStatus();
+};
+</script>
+</body>
+</html>

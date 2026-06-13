@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khetika — Offline</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --green: #2e7d32; --green-bg: #e8f5e9; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Baloo 2', sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem; text-align: center;
+    }
+    .icon { font-size: 80px; margin-bottom: 1rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    h1 { color: var(--green); font-size: 2rem; margin-bottom: 0.5rem; }
+    p { color: #555; font-size: 1rem; max-width: 380px; line-height: 1.6; margin-bottom: 1.5rem; }
+    .tip-card {
+      background: white; border-radius: 16px; padding: 1.2rem 1.5rem;
+      border-left: 4px solid var(--green); max-width: 400px; width: 100%;
+      text-align: left; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .tip-card h3 { color: var(--green); font-size: 14px; margin-bottom: 6px; }
+    .tip-card p { font-size: 13px; color: #444; margin: 0; }
+    button {
+      background: var(--green); color: white;
+      border: none; border-radius: 12px; padding: 12px 28px;
+      font-family: 'Baloo 2', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    button:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="icon">🌾</div>
+  <h1>You're Offline</h1>
+  <p>Khetika needs an internet connection to answer questions. But here's some farming wisdom while you wait!</p>
+
+  <div class="tip-card">
+    <h3>💧 Irrigation Tip</h3>
+    <p>Water crops in the early morning (5–8 AM) or evening (5–7 PM) to minimize evaporation and prevent leaf burn.</p>
+  </div>
+  <div class="tip-card">
+    <h3>🌱 Soil Health Tip</h3>
+    <p>Add organic matter (compost/green manure) every season. It improves soil structure, water retention, and nutrient availability.</p>
+  </div>
+  <div class="tip-card">
+    <h3>🐛 Pest Prevention</h3>
+    <p>Scout your field every 3–4 days. Early detection of pests prevents 80% of crop damage before it becomes severe.</p>
+  </div>
+
+  <button onclick="window.location.reload()">🔄 Retry Connection</button>
+</body>
+</html>
